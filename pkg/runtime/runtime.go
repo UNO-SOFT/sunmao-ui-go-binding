@@ -9,8 +9,8 @@ import (
 	"strings"
 
 	"github.com/gorilla/websocket"
+	"github.com/klauspost/compress/gzhttp"
 	echo "github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/yuyz0112/sunmao-ui-go-binding/pkg/sunmao"
 )
 
@@ -26,6 +26,7 @@ type Runtime struct {
 
 func New(uiDir string) *Runtime {
 	e := echo.New()
+	e.Debug = true
 
 	r := &Runtime{
 		e:                        e,
@@ -54,7 +55,7 @@ func (r *Runtime) Run() {
 		log.Fatalln("please load app before run")
 	}
 
-	r.e.Use(middleware.Gzip())
+	r.e.Use(echo.WrapMiddleware(func(h http.Handler) http.Handler { return gzhttp.GzipHandler(h) }))
 
 	r.e.Static("/assets", fmt.Sprintf("%v/dist/assets", r.uiDir))
 
